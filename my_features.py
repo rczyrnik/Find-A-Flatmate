@@ -1,7 +1,7 @@
 import pandas as pd
 
 def feature_time(df, user_df):
-    ad,sg,sr,sc,sn,ss,t = [],[],[],[],[],[],[]
+    ad,sg,sr,sc,sn,ss,sa,rs,t = [],[],[],[],[],[],[],[],[]
 
     c=0
     for index, row in df.iterrows():
@@ -14,6 +14,8 @@ def feature_time(df, user_df):
             sc.append(first.isClean == second.isClean)
             sn.append(first.isNight == second.isNight)
             ss.append(first.isStudent == second.isStudent)
+            sa.append(first.attractiveness)
+            rs.append(second.selectivity)
             t.append(False)
         except:
             ad.append('trouble')
@@ -22,6 +24,8 @@ def feature_time(df, user_df):
             sc.append('trouble')
             sn.append('trouble')
             ss.append('trouble')
+            sa.append('trouble')
+            rs.append('trouble')
             t.append(True)
 
             c += 1
@@ -32,6 +36,8 @@ def feature_time(df, user_df):
     df['same_clean'] = sc
     df['same_night'] = sn
     df['same_student'] = ss
+    df['sender_attractiveness'] = sa
+    df['receiver_selectivity'] = rs
     df['trouble'] = t
 
     df = df.drop(df[df.trouble].index)
