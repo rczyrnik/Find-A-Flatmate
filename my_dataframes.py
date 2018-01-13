@@ -24,6 +24,7 @@ def get_user_data():
     col_to_drop = ['id']
     user_df = user_df.drop(col_to_drop, axis=1)
 
+    user_df = user_df[user_df.onboarded==1]
 
     user_df = user_df[['uid', 'created', 'updated', 'about','has_about', 'len_about', 'available',
            'birthday', 'age', 'collegeId', 'emailVerified', 'foundRoommate', 'gender',
@@ -31,6 +32,7 @@ def get_user_data():
            'isStudent', 'lastActive', 'latitude', 'longitude', 'maxCost',
            'minCost', 'numRoommates', 'onboarded', 'petsOk', 'pictureId',
            'roomPostId', 'roomTypeId', 'smokingOk', 'term', 'work']]
+
 
     user_df = user_df.drop_duplicates()
     user_df = user_df.set_index('uid')
