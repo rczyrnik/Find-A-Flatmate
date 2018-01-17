@@ -178,17 +178,17 @@ def get_response_df(convo_df):
     # how many did he respond to?
     responses_sent = convo_df[convo_df.response == True].groupby('first_uid').const.sum()
     # ratio (higher = responds less)
-    selectivity = 1-responses_sent/messages_received
+    responsiveness = responses_sent/messages_received
 
     # combine into a dataframe and name columns
     user_response = pd.concat([messages_sent, responses_received, attractiveness,
-                               messages_received, responses_sent, selectivity], axis=1)
+                               messages_received, responses_sent, responsiveness], axis=1)
     user_response.columns=[['messages_sent', 'responses_received', 'attractiveness',
-                               'messages_received', 'responses_sent', 'selectivity']]
+                               'messages_received', 'responses_sent', 'responsiveness']]
 
     # get averages
     average_attractiveness = user_response[user_response.attractiveness >0].mean()['attractiveness']
-    average_selectivity = user_response[user_response.selectivity >0].mean()['selectivity']
+    average_responsiveness = user_response[user_response.responsiveness >0].mean()['responsiveness']
 
     # deal with NaN on attractiveness side
     user_response = user_response.fillna({'messages_sent':0, 'responses_received':0})
@@ -198,55 +198,119 @@ def get_response_df(convo_df):
         elif row.responses_received == 0: row.attractiveness = 0
     # user_response = user_response.fillna({'attractiveness':0})
 
-    # deal with NaN on selectivity side
+    # deal with NaN on responsiveness side
     user_response = user_response.fillna({'messages_received':0, 'responses_sent':0})
     for index, row in user_response.iterrows():
-        if row.messages_received == 0: row.selectivity = average_selectivity
-        if row.responses_sent == 0: row.selectivity = 1
+        if row.messages_received == 0: row.responsiveness = average_responsiveness
+        if row.responses_sent == 0: row.responsiveness = 0
     # user_response = user_response.fillna({'attractiveness':0})
 
     return user_response
 
+def my_to_datetime(x):
+    if isinstance(x, dict):
+        try:
+            return pd.to_datetime(x['$date'])
+        except:
+            return None
+    else:
+        return None
+
 def get_user_data(response_df):
-    filename = "/Users/gandalf/Documents/data/data_users.csv"
+    # filename = "/Users/gandalf/Documents/data/data_users.csv"
 
-    user_df = pd.read_csv(filename, parse_dates=['created',
-                                            'updated',
-                                            'available',
-                                            'birthday',
-                                            'lastActive'], na_values='nan')
-
-    user_df = user_df.fillna({'about'    : ''})
-
-    user_df['len_about'] = user_df.about.apply(lambda x: len(x))
-    user_df['has_about'] = user_df.len_about > 0
-    user_df['age'] = 2018-user_df['birthday'].apply(lambda x: x.year)
-
-    col_to_drop = ['id']
-    user_df = user_df.drop(col_to_drop, axis=1)
-
-    user_df = user_df[user_df.onboarded==1]
-
-    user_df = user_df[['uid', 'created', 'updated', 'about','has_about', 'len_about', 'available',
-           'birthday', 'age', 'collegeId', 'emailVerified', 'foundRoommate', 'gender',
-           'groupChat', 'hometownId', 'inRelationship', 'isClean', 'isNight',
-           'isStudent', 'lastActive', 'latitude', 'longitude', 'maxCost',
-           'minCost', 'numRoommates', 'onboarded', 'petsOk', 'pictureId',
-           'roomPostId', 'roomTypeId', 'smokingOk', 'term', 'work']]
+    # user_df = pd.read_csv(filename, parse_dates=['created',
+    #                                         'updated',
+    #                                         'available',
+    #                                         'birthday',
+    #                                         'lastActive'], na_values='nan')
+    #
 
 
-    user_df = user_df.drop_duplicates()
-    user_df = user_df.set_index('uid')
 
-    user_df = user_df.join(response_df)
+    # user_df = user_df.fillna({'about'    : ''})
+    #
+    # user_df['len_about'] = user_df.about.apply(lambda x: len(x))
+    # user_df['has_about'] = user_df.len_about > 0
+    # user_df['age'] = 2018-user_df['birthday'].apply(lambda x: x.year)
+    #
+    # col_to_drop = ['id']
+    # user_df = user_df.drop(col_to_drop, axis=1)
+    #
+    # user_df = user_df[user_df.onboarded==1]
+    #
+    # user_df = user_df[['uid', 'created', 'updated', 'about','has_about', 'len_about', 'available',
+    #        'birthday', 'age', 'collegeId', 'emailVerified', 'foundRoommate', 'gender',
+    #        'groupChat', 'hometownId', 'inRelationship', 'isClean', 'isNight',
+    #        'isStudent', 'lastActive', 'latitude', 'longitude', 'maxCost',
+    #        'minCost', 'numRoommates', 'onboarded', 'petsOk', 'pictureId',
+    #        'roomPostId', 'roomTypeId', 'smokingOk', 'term', 'work']]
+    #
+    #
+    # user_df = user_df.drop_duplicates()
+    # user_df = user_df.set_index('uid')
+    #
+    # user_df = user_df.join(response_df)
+    #
+    # average_attractiveness = response_df[response_df.attractiveness > 0].mean()['attractiveness']
+    # average_responsiveness= response_df[response_df.responsiveness < 1].mean()['responsiveness']
+    #
+    # user_df = user_df.fillna({'messages_sent' : 0,'responses_received': 0,'attractiveness':average_attractiveness,
+    #                           'messages_received': 0,'responses_sent': 0, 'responsiveness':average_responsiveness})
+    #
+
+    filename = "/Users/gandalf/Documents/data/data_users.json"
+
+    df = pd.read_json(filename)
+
+    col_to_drop = ['_acl','_auth_data_facebook','_hashed_password','_rperm','_wperm','blocked','email','emailVerified','firstName',
+                      'foundRoommate','groupChat','hometown','hometownCounty','likes','lastName','positions','recommended','username']
+    df = df.drop(col_to_drop, axis = 1)
+
+    df = df.fillna({'about':''})
+
+    df = df.rename(index=str, columns={"_created_at": "created",
+                                       "_updated_at": "updated",
+                                       "_p_room"    : "has_room",
+                                       "_id"        : "uid"})
+
+    df = df.set_index('uid')
+    df['len_about'] = df.about.apply(lambda x: len(x))
+    df['has_about'] = df.len_about > 0
+    df.has_room = df.has_room.apply(lambda x: isinstance(x,str))
+    df.facebookId = df.facebookId.apply(lambda x: isinstance(x,str))
+    df.linkedinId = df.linkedinId.apply(lambda x: isinstance(x,str))
+    df.picture = df.picture.apply(lambda x: isinstance(x,str))
+
+
+
+    df.created = df.created.apply(lambda x: my_to_datetime(x))
+    df.updated = df.updated.apply(lambda x: my_to_datetime(x))
+    df.activeAt = df.activeAt.apply(lambda x: my_to_datetime(x))
+    df.available = df.available.apply(lambda x: my_to_datetime(x))
+    df.birthday = df.birthday.apply(lambda x: my_to_datetime(x))
+    df['age'] = 2018-df['birthday'].apply(lambda x: x.year)
+
+    df = df[['created', 'updated', 'activeAt', 'available', # dates
+             'about', 'has_about', 'len_about',            # about
+             'birthday', 'age', 'gender', 'location', 'work',      # demographic
+             'hometownCity', 'hometownCountry', 'hometownState',     # more demographic
+             'college', 'facebookId','linkedinId', 'picture',        # engagement
+             'maxCost', 'minCost', 'neighborhoods', 'numRoommates', 'term', 'type', 'has_room',  # room basics
+             'amenities', 'hobbies',                                              # room not boolean
+             'inRelationship', 'isClean', 'isNight', 'isStudent', 'petsOk', 'smokingOk',   # room boolean
+             'onboarded',]]
+
+    df = df.join(response_df)
 
     average_attractiveness = response_df[response_df.attractiveness > 0].mean()['attractiveness']
-    average_selectivity = response_df[response_df.selectivity < 1].mean()['selectivity']
+    average_responsiveness = response_df[response_df.responsiveness > 0].mean()['responsiveness']
 
-    user_df = user_df.fillna({'messages_sent' : 0,'responses_received': 0,'attractiveness':average_attractiveness,
-                              'messages_received': 0,'responses_sent': 0, 'selectivity':average_selectivity})
+    df = df.fillna({'messages_sent' : 0,'responses_received': 0,'attractiveness':average_attractiveness,
+                              'messages_received': 0,'responses_sent': 0, 'responsiveness':average_responsiveness})
 
-    return user_df
+
+    return df
 
 def remove_bad_uids(df, user_df):
     '''
