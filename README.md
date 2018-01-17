@@ -1,5 +1,7 @@
 # MatchingService
 
+### 0. accessory files
+
 ### 1. read in data (1_get_dataframes.ipynb)
 
   _INPUTS_
@@ -25,8 +27,18 @@
  _OUTPUTS_
   - file 1: data_users.pkl
   - file 2: data_convo.pkl
+ 
+### 2. eda (2_eda.ipynb)
 
-### 2. generate features (2_get_features.ipynb)
+  _INPUTS_
+   - file 1: data_users.pkl
+   - file 2: data_convo.pkl
+   
+  _PY FILES_
+   - file 1: my_pickle.py
+     - unpickle_it(name)
+
+### 3. generate features (3_get_features.ipynb)
 
   _INPUTS_
    - file 1: data_users.pkl
@@ -36,3 +48,5 @@
   - file 1: my_pickle.py
     - unpickle_it(name)
     - pickle_it(df, name)
+    
+### 4. analysis (many files)
