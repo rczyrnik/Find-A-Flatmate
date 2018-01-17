@@ -91,7 +91,7 @@ def feature_time(df, user_df):
         second = user_df.loc[str(row.second_uid)]
         ad.append(abs(first.age - second.age))
         ro.append(get_rent_range(first, second))
-        di.append(get_inverse_distance(first, second))
+        # di.append(get_inverse_distance(first, second))
         rn.append(get_similar_roommates(first, second))
         sg.append(first.gender == second.gender)
         sr.append(first.inRelationship == second.inRelationship)
@@ -107,7 +107,7 @@ def feature_time(df, user_df):
     print(len(sr))
     df['age_dif'] = ad
     df['rent_overlap'] = ro
-    df['inverse_distance'] = di
+    # df['inverse_distance'] = di
     df['roommate_num_sim'] = rn
     df['same_gender'] = sg
     df['same_relate'] = sr
