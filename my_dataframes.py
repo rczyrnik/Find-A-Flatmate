@@ -216,65 +216,37 @@ def my_to_datetime(x):
     else:
         return None
 
-def get_user_data(response_df):
-    # filename = "/Users/gandalf/Documents/data/data_users.csv"
+def get_user_data():
 
-    # user_df = pd.read_csv(filename, parse_dates=['created',
-    #                                         'updated',
-    #                                         'available',
-    #                                         'birthday',
-    #                                         'lastActive'], na_values='nan')
-    #
-
-
-
-    # user_df = user_df.fillna({'about'    : ''})
-    #
-    # user_df['len_about'] = user_df.about.apply(lambda x: len(x))
-    # user_df['has_about'] = user_df.len_about > 0
-    # user_df['age'] = 2018-user_df['birthday'].apply(lambda x: x.year)
-    #
-    # col_to_drop = ['id']
-    # user_df = user_df.drop(col_to_drop, axis=1)
-    #
-    # user_df = user_df[user_df.onboarded==1]
-    #
-    # user_df = user_df[['uid', 'created', 'updated', 'about','has_about', 'len_about', 'available',
-    #        'birthday', 'age', 'collegeId', 'emailVerified', 'foundRoommate', 'gender',
-    #        'groupChat', 'hometownId', 'inRelationship', 'isClean', 'isNight',
-    #        'isStudent', 'lastActive', 'latitude', 'longitude', 'maxCost',
-    #        'minCost', 'numRoommates', 'onboarded', 'petsOk', 'pictureId',
-    #        'roomPostId', 'roomTypeId', 'smokingOk', 'term', 'work']]
-    #
-    #
-    # user_df = user_df.drop_duplicates()
-    # user_df = user_df.set_index('uid')
-    #
-    # user_df = user_df.join(response_df)
-    #
-    # average_attractiveness = response_df[response_df.attractiveness > 0].mean()['attractiveness']
-    # average_responsiveness= response_df[response_df.responsiveness < 1].mean()['responsiveness']
-    #
-    # user_df = user_df.fillna({'messages_sent' : 0,'responses_received': 0,'attractiveness':average_attractiveness,
-    #                           'messages_received': 0,'responses_sent': 0, 'responsiveness':average_responsiveness})
-    #
-
+    # read in json as dataframe
     filename = "/Users/gandalf/Documents/data/data_users.json"
-
     df = pd.read_json(filename)
 
-    col_to_drop = ['_acl','_auth_data_facebook','_hashed_password','_rperm','_wperm','blocked','email','emailVerified','firstName',
-                      'foundRoommate','groupChat','hometown','hometownCounty','likes','lastName','positions','recommended','username']
-    df = df.drop(col_to_drop, axis = 1)
-
-    df = df.fillna({'about':''})
 
     df = df.rename(index=str, columns={"_created_at": "created",
                                        "_updated_at": "updated",
                                        "_p_room"    : "has_room",
                                        "_id"        : "uid"})
-
     df = df.set_index('uid')
+
+    # change dates from strings to date times
+    df.created = df.created.apply(lambda x: my_to_datetime(x))
+    df.updated = df.updated.apply(lambda x: my_to_datetime(x))
+    df.activeAt = df.activeAt.apply(lambda x: my_to_datetime(x))
+    df.available = df.available.apply(lambda x: my_to_datetime(x))
+    df.birthday = df.birthday.apply(lambda x: my_to_datetime(x))
+    df['age'] = 2018-df['birthday'].apply(lambda x: x.year)
+
+    # drop unused columns
+    # col_to_drop = ['_acl','_auth_data_facebook','_hashed_password','_rperm','_wperm','blocked','email','emailVerified','firstName',
+    #                   'foundRoommate','groupChat','hometown','hometownCounty','likes','lastName','positions','recommended','username']
+    # df = df.drop(col_to_drop, axis = 1)
+
+    # fill in na values
+    df = df.fillna({'about':''})
+
+
+    # create new features
     df['len_about'] = df.about.apply(lambda x: len(x))
     df['has_about'] = df.len_about > 0
     df.has_room = df.has_room.apply(lambda x: isinstance(x,str))
@@ -283,13 +255,8 @@ def get_user_data(response_df):
     df.picture = df.picture.apply(lambda x: isinstance(x,str))
 
 
+    # reformat df by renaming and moving around columns
 
-    df.created = df.created.apply(lambda x: my_to_datetime(x))
-    df.updated = df.updated.apply(lambda x: my_to_datetime(x))
-    df.activeAt = df.activeAt.apply(lambda x: my_to_datetime(x))
-    df.available = df.available.apply(lambda x: my_to_datetime(x))
-    df.birthday = df.birthday.apply(lambda x: my_to_datetime(x))
-    df['age'] = 2018-df['birthday'].apply(lambda x: x.year)
 
     df = df[['created', 'updated', 'activeAt', 'available', # dates
              'about', 'has_about', 'len_about',            # about
@@ -301,14 +268,15 @@ def get_user_data(response_df):
              'inRelationship', 'isClean', 'isNight', 'isStudent', 'petsOk', 'smokingOk',   # room boolean
              'onboarded',]]
 
-    df = df.join(response_df)
+    # df = df.join(response_df)
+    #
+    # average_attractiveness = response_df[response_df.attractiveness > 0].mean()['attractiveness']
+    # average_responsiveness = response_df[response_df.responsiveness > 0].mean()['responsiveness']
+    #
+    # df = df.fillna({'messages_sent' : 0,'responses_received': 0,'attractiveness':average_attractiveness,
+    #                           'messages_received': 0,'responses_sent': 0, 'responsiveness':average_responsiveness})
 
-    average_attractiveness = response_df[response_df.attractiveness > 0].mean()['attractiveness']
-    average_responsiveness = response_df[response_df.responsiveness > 0].mean()['responsiveness']
-
-    df = df.fillna({'messages_sent' : 0,'responses_received': 0,'attractiveness':average_attractiveness,
-                              'messages_received': 0,'responses_sent': 0, 'responsiveness':average_responsiveness})
-
+    print("created user dataframe")
 
     return df
 
