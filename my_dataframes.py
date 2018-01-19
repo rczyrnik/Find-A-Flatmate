@@ -295,6 +295,7 @@ def remove_bad_uids(df, user_df):
     df['flag2'] = df.second_uid.apply(lambda x: x not in uids)
     df['flag'] = df.flag1 | df.flag2
 
+    print("{} rows dropped".format(df.flag.sum()))
     # drop rows that were flaged
     df = df.drop(df[df.flag].index)
 
