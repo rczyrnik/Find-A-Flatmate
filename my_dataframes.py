@@ -1,11 +1,14 @@
 import pandas as pd
+import numpy as np
 import json
 from collections import defaultdict
+import my_pickle as mp
+import my_split as ms
 
 def get_message_df():
 
     # read from json
-    filename = "/Users/gandalf/Documents/data/data_messages.json"
+    filename = "/Users/gandalf/Documents/data/raw_data_messages.json"
     with open(filename) as f:
         json_data = f.read()
         data = json.loads(json_data)
@@ -51,6 +54,10 @@ def get_message_df():
     df = df[['message_id', 'conversation_id', 'uid','s_uid', 'read', 'readBy', 'text_length',
            'timestamp','date', 'imageURL', 'emailAttempted', 'emailed']]
 
+    df['flag'] = df.timestamp.apply(lambda x: not isinstance(x, int))
+
+    df = df.drop(df[df.flag].index)
+
     print("created message dataframe")
     return df
 
@@ -64,14 +71,16 @@ def get_conversation_df(message_df):
 
     column_names = ['conv_id',       # user id
                     'response',      # did anyone respond?
-                    'first_uid',     # user who sent the first message
-                    'second_uid',    # user who responded
-                    'first_mid',     # message id of the first message
-                    'second_mid',    # message id of the second message
+                    'uid_sender',     # user who sent the first message
+                    'uid_receiver',    # user who responded
+                    'len_sender',     # message id of the first message
+                    'len_receiver',    # message id of the second message
+                    'mid_sender',     # message id of the first message
+                    'mid_receiver',    # message id of the second message
                     'timestamp'
                    ]
 
-    ci,rs,fu,fm,su,sm,ts = [],[],[],[],[],[],[]
+    ci,rs,fu,fl,fm,su,sl,sm,ts = [],[],[],[],[],[],[],[],[]
     already_added = set()
 
     first_message = True
@@ -84,8 +93,10 @@ def get_conversation_df(message_df):
             ci.append(temp)
             rs.append(False)
             fu.append(row.uid)
+            fl.append(row.text_length)
             fm.append(row.message_id)
             su.append(None)
+            sl.append(None)
             sm.append(None)
             ts.append(row.timestamp)
 
@@ -101,13 +112,14 @@ def get_conversation_df(message_df):
                 ts.append(row.timestamp)
             elif second_message:
                 su.append(row.uid)
+                sl.append(row.text_length)
                 sm.append(row.message_id)
                 already_added.add(row.conversation_id)
                 first_message = True
                 second_message = False
 
     # create dataframe from lists
-    df = pd.DataFrame([ci,rs,fu,su,fm,sm,ts]).T
+    df = pd.DataFrame([ci,rs,fu,su,fl,sl,fm,sm,ts]).T
     df.columns=column_names
 
     # get two userids
@@ -120,8 +132,8 @@ def get_conversation_df(message_df):
     # going to make an assumption here, and fix later if needed
     c = 0
     for index, row in df.iterrows():
-        if row.first_ten == row.first_uid: row.second_uid = row.last_ten
-        elif row.last_ten == row.first_uid: row.second_uid = row.first_ten
+        if row.first_ten == row.uid_sender: row.uid_receiver = row.last_ten
+        elif row.last_ten == row.uid_sender: row.uid_receiver = row.first_ten
         else:c += 1
 
     df = df.drop(['first_ten', 'last_ten'], axis=1)
@@ -135,7 +147,7 @@ def get_conversation_df(message_df):
 def get_lastmessage_df():
 
     # read from json
-    filename = "/Users/gandalf/Documents/data/data_messages.json"
+    filename = "/Users/gandalf/Documents/data/raw_data_messages.json"
     with open(filename) as f:
         json_data = f.read()
         data = json.loads(json_data)
@@ -219,7 +231,7 @@ def my_to_datetime(x):
 def get_user_data():
 
     # read in json as dataframe
-    filename = "/Users/gandalf/Documents/data/data_users.json"
+    filename = "/Users/gandalf/Documents/data/raw_data_users.json"
     df = pd.read_json(filename)
 
 
@@ -238,9 +250,9 @@ def get_user_data():
     df['age'] = 2018-df['birthday'].apply(lambda x: x.year)
 
     # drop unused columns
-    # col_to_drop = ['_acl','_auth_data_facebook','_hashed_password','_rperm','_wperm','blocked','email','emailVerified','firstName',
-    #                   'foundRoommate','groupChat','hometown','hometownCounty','likes','lastName','positions','recommended','username']
-    # df = df.drop(col_to_drop, axis = 1)
+    col_to_drop = ['_acl','_auth_data_facebook','_hashed_password','_rperm','_wperm','blocked','email','emailVerified','firstName',
+                      'foundRoommate','groupChat','hometown','hometownCounty','likes','lastName','positions','recommended','username']
+    df = df.drop(col_to_drop, axis = 1)
 
     # fill in na values
     df = df.fillna({'about':''})
@@ -249,6 +261,16 @@ def get_user_data():
     # create new features
     df['len_about'] = df.about.apply(lambda x: len(x))
     df['has_about'] = df.len_about > 0
+    df['I_count'] = df.about.apply(lambda x: x.count('I'))
+    df['I_ratio'] = df.about.apply(lambda x: x.count('I')/len(x) if len(x) > 0 else np.nan)
+    df['period_count'] = df.about.apply(lambda x: x.count('.'))
+    df['period_ratio'] = df.about.apply(lambda x: x.count('.')/len(x) if len(x) > 0 else np.nan)
+    df['question_count'] = df.about.apply(lambda x: x.count('?'))
+    df['question_ratio'] = df.about.apply(lambda x: x.count('?')/len(x) if len(x) > 0 else np.nan)
+    df['exclaim_count'] = df.about.apply(lambda x: x.count('!'))
+    df['exclaim_ratio'] = df.about.apply(lambda x: x.count('!')/len(x) if len(x) > 0 else np.nan)
+    df['sentence_count'] = df.period_count+df.question_count+df.exclaim_count
+    df['sentence_ratio'] = df.period_ratio+df.question_ratio+df.exclaim_ratio
     df.has_room = df.has_room.apply(lambda x: isinstance(x,str))
     df.facebookId = df.facebookId.apply(lambda x: isinstance(x,str))
     df.linkedinId = df.linkedinId.apply(lambda x: isinstance(x,str))
@@ -258,24 +280,17 @@ def get_user_data():
     # reformat df by renaming and moving around columns
 
 
-    df = df[['created', 'updated', 'activeAt', 'available', # dates
-             'about', 'has_about', 'len_about',            # about
-             'birthday', 'age', 'gender', 'location', 'work',      # demographic
-             'hometownCity', 'hometownCountry', 'hometownState',     # more demographic
-             'college', 'facebookId','linkedinId', 'picture',        # engagement
-             'maxCost', 'minCost', 'neighborhoods', 'numRoommates', 'term', 'type', 'has_room',  # room basics
-             'amenities', 'hobbies',                                              # room not boolean
-             'inRelationship', 'isClean', 'isNight', 'isStudent', 'petsOk', 'smokingOk',   # room boolean
-             'onboarded',]]
+    # df = df[['created', 'updated', 'activeAt', 'available', # dates
+    #          'about', 'has_about', 'len_about',            # about
+    #          'birthday', 'age', 'gender', 'location', 'work',      # demographic
+    #          'hometownCity', 'hometownCountry', 'hometownState',     # more demographic
+    #          'college', 'facebookId','linkedinId', 'picture',        # engagement
+    #          'maxCost', 'minCost', 'neighborhoods', 'numRoommates', 'term', 'type', 'has_room',  # room basics
+    #          'amenities', 'hobbies',                                              # room not boolean
+    #          'inRelationship', 'isClean', 'isNight', 'isStudent', 'petsOk', 'smokingOk',   # room boolean
+    #          'onboarded']]
 
-    # df = df.join(response_df)
-    #
-    # average_attractiveness = response_df[response_df.attractiveness > 0].mean()['attractiveness']
-    # average_responsiveness = response_df[response_df.responsiveness > 0].mean()['responsiveness']
-    #
-    # df = df.fillna({'messages_sent' : 0,'responses_received': 0,'attractiveness':average_attractiveness,
-    #                           'messages_received': 0,'responses_sent': 0, 'responsiveness':average_responsiveness})
-
+    df = df.drop(df[df.onboarded != 1].index)
     print("created user dataframe")
 
     return df
@@ -291,8 +306,8 @@ def remove_bad_uids(df, user_df):
     uids = set(user_df.index)
 
     # set flag if first or second uid not in set of uids
-    df['flag1'] = df.first_uid.apply(lambda x: x not in uids)
-    df['flag2'] = df.second_uid.apply(lambda x: x not in uids)
+    df['flag1'] = df.uid_sender.apply(lambda x: x not in uids)
+    df['flag2'] = df.uid_receiver.apply(lambda x: x not in uids)
     df['flag'] = df.flag1 | df.flag2
 
     print("{} rows dropped".format(df.flag.sum()))
