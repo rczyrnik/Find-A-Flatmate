@@ -228,6 +228,15 @@ def my_to_datetime(x):
     else:
         return None
 
+def get_hoods(lst):
+    if isinstance(lst, list):
+        temp_set = set()
+        for thing in lst:
+            temp_set.add(thing['objectId'])
+        return temp_set
+    else:
+        return set()
+
 def get_user_data():
 
     # read in json as dataframe
@@ -248,6 +257,9 @@ def get_user_data():
     df.available = df.available.apply(lambda x: my_to_datetime(x))
     df.birthday = df.birthday.apply(lambda x: my_to_datetime(x))
     df['age'] = 2018-df['birthday'].apply(lambda x: x.year)
+
+
+    df.neighborhoods = df.neighborhoods.apply(get_hoods)
 
     # drop unused columns
     col_to_drop = ['_acl','_auth_data_facebook','_hashed_password','_rperm','_wperm','blocked','email','emailVerified','firstName',
