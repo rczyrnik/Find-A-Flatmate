@@ -62,25 +62,25 @@ def get_message_df():
     return df
 
 def get_conversation_df(message_df):
-    # filename = "/Users/gandalf/Documents/data/data_messages.json"
-    # json_data=open(filename).read()
-    # data = json.loads(json_data)
 
+    # get conversation length
     message_df['const'] = 1
     convo_length = message_df.groupby('conversation_id').const.sum().T.to_dict()
 
-    column_names = ['conv_id',       # user id
+    # read in data from message df
+    column_names = ['conversation_id',       # user id
                     'response',      # did anyone respond?
                     'uid_sender',     # user who sent the first message
-                    'uid_receiver',    # user who responded
+                    # 'uid_receiver',    # user who responded
                     'len_sender',     # message id of the first message
                     'len_receiver',    # message id of the second message
                     'mid_sender',     # message id of the first message
                     'mid_receiver',    # message id of the second message
-                    'timestamp'
+                    'timestamp',
+                    'convo_length'
                    ]
 
-    ci,rs,fu,fl,fm,su,sl,sm,ts = [],[],[],[],[],[],[],[],[]
+    ci,rs,fu,fl,fm,su,sl,sm,ts,cl = [],[],[],[],[],[],[],[],[],[]
     already_added = set()
 
     first_message = True
@@ -99,6 +99,7 @@ def get_conversation_df(message_df):
             sl.append(None)
             sm.append(None)
             ts.append(row.timestamp)
+            cl.append(convo_length[row.conversation_id])
 
         # if there was a response
         elif row.conversation_id not in already_added:
@@ -110,6 +111,7 @@ def get_conversation_df(message_df):
                 first_message = False
                 second_message = True
                 ts.append(row.timestamp)
+                cl.append(convo_length[row.conversation_id])
             elif second_message:
                 su.append(row.uid)
                 sl.append(row.text_length)
@@ -119,28 +121,23 @@ def get_conversation_df(message_df):
                 second_message = False
 
     # create dataframe from lists
-    df = pd.DataFrame([ci,rs,fu,su,fl,sl,fm,sm,ts]).T
+    df = pd.DataFrame([ci,rs,fu,fl,sl,fm,sm,ts,cl]).T
     df.columns=column_names
-
-    # get two userids
-    df['first_ten'] = df.conv_id.apply(lambda x: x[:10])
-    df['last_ten'] = df.conv_id.apply(lambda x: x[10:])
 
     # get rid of the first 24 rows because they are trouble makers
     df=df[24:]
 
-    # going to make an assumption here, and fix later if needed
-    c = 0
-    for index, row in df.iterrows():
-        if row.first_ten == row.uid_sender: row.uid_receiver = row.last_ten
-        elif row.last_ten == row.uid_sender: row.uid_receiver = row.first_ten
-        else:c += 1
+    # get receiver ids
+    df['user_ids'] = df.conversation_id.apply(lambda x: {x[:10],x[10:]})
+    df['uid_receiver'] = df.apply(lambda x: next(iter(x['user_ids'].difference(set([x.uid_sender])))), axis=1)
+    df = df.drop(['user_ids'], axis=1)
 
-    df = df.drop(['first_ten', 'last_ten'], axis=1)
+    # get conversation length
+    message_df['const'] = 1
+    convo_length = message_df.groupby('conversation_id').const.sum().T.to_dict()
+    df['convo_length'] = df.conversation_id.apply(lambda x: convo_length[x])
 
-    df = df.sort_values(['timestamp'])
-
-    print("created conversation dataframe with {} known errors".format(c))
+    print("created conversation dataframe")
 
     return df
 
@@ -237,7 +234,7 @@ def get_hoods(lst):
     else:
         return set()
 
-def get_user_data():
+def get_user_df():
 
     # read in json as dataframe
     filename = "/Users/gandalf/Documents/data/raw_data_users.json"
@@ -306,27 +303,27 @@ def get_user_data():
     print("created user dataframe")
 
     return df
-
-def remove_bad_uids(df, user_df):
-    '''
-    removes rows of the df that have uids not in uids
-    '''
-    # uids better be unique
-    if len(user_df.index) != len(user_df.index.unique()): return 'panic!'
-
-    # get set of all uids
-    uids = set(user_df.index)
-
-    # set flag if first or second uid not in set of uids
-    df['flag1'] = df.uid_sender.apply(lambda x: x not in uids)
-    df['flag2'] = df.uid_receiver.apply(lambda x: x not in uids)
-    df['flag'] = df.flag1 | df.flag2
-
-    print("{} rows dropped".format(df.flag.sum()))
-    # drop rows that were flaged
-    df = df.drop(df[df.flag].index)
-
-    # drop flag columns
-    df = df.drop(['flag1','flag2','flag'], axis=1)
-
-    return df
+#
+# def remove_bad_uids(df, user_df):
+#     '''
+#     removes rows of the df that have uids not in uids
+#     '''
+#     # uids better be unique
+#     if len(user_df.index) != len(user_df.index.unique()): return 'panic!'
+#
+#     # get set of all uids
+#     uids = set(user_df.index)
+#
+#     # set flag if first or second uid not in set of uids
+#     df['flag1'] = df.uid_sender.apply(lambda x: x not in uids)
+#     df['flag2'] = df.uid_receiver.apply(lambda x: x not in uids)
+#     df['flag'] = df.flag1 | df.flag2
+#
+#     print("{} rows dropped".format(df.flag.sum()))
+#     # drop rows that were flaged
+#     df = df.drop(df[df.flag].index)
+#
+#     # drop flag columns
+#     df = df.drop(['flag1','flag2','flag'], axis=1)
+#
+#     return df
