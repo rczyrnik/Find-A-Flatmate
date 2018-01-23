@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     # on ec2:
     # X = pd.read_json('../data_X.json')
-    # y = pd.read_json('../data_y.json')
+    # y = pd.read_json('../data_y.json')['response']
 
     X_train, X_test, y_train, y_test = prepare_data(X, y)
     model = GradientBoostingClassifier()
@@ -58,14 +58,14 @@ if __name__ == "__main__":
     # print(recall, precision, accuracy)
     #
 
-    GBC_grid = {'loss' : [‘deviance’, ‘exponential’],
+    GBC_grid = {'loss' : ['deviance', 'exponential'],
                     'learning_rate': [.1,.4,.8],
                     'n_estimators': [100],
                     'max_depth': [1, 3, 5],
                     'criterion': ['friedman_mse','mse','mae'],
                     'min_samples_split': [1,2,3],
                     'min_samples_leaf': [1, 2, 3],
-                    'subsample': [.2,.5.1],
+                    'subsample': [.2,.5,1],
                     'max_features': ['auto','sqrt','log2',None]}
     #                 max_leaf_nodes
     #                 min_impurity_split
