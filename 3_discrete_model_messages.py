@@ -58,15 +58,15 @@ if __name__ == "__main__":
     # print(recall, precision, accuracy)
     #
 
-    # GBC_grid = {'loss' : [‘deviance’, ‘exponential’],
-    #                 'learning_rate': [.1,.4,.8],
-    #                 'n_estimators': [100],
-    #                 'max_depth': [1, 3, 5],
-    #                 'criterion': ['friedman_mse','mse','mae'],
-    #                 'min_samples_split': [1,2,3],
-    #                 'min_samples_leaf': [1, 2, 3],
-    #                 'subsample': [.2,.5.1],
-    #                 'max_features': ['auto','sqrt','log2',None]}
+    GBC_grid = {'loss' : [‘deviance’, ‘exponential’],
+                    'learning_rate': [.1,.4,.8],
+                    'n_estimators': [100],
+                    'max_depth': [1, 3, 5],
+                    'criterion': ['friedman_mse','mse','mae'],
+                    'min_samples_split': [1,2,3],
+                    'min_samples_leaf': [1, 2, 3],
+                    'subsample': [.2,.5.1],
+                    'max_features': ['auto','sqrt','log2',None]}
     #                 max_leaf_nodes
     #                 min_impurity_split
     #                 min_impurity_decrease
@@ -78,7 +78,8 @@ if __name__ == "__main__":
     #               }
 
 
-    GBC_grid = {'learning_rate': [.1,.4,.8]}
+    GBC_grid = {'learning_rate': [.1,.4,.6,.7,.8,.9,1],
+                'max_depth': [1, 3, 5],}
     grid_search = GridSearchCV(model, GBC_grid, n_jobs=-1).fit(X_train, y_train)
 
     print(grid_search.best_score_, grid_search.best_params_)
