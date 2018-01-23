@@ -234,12 +234,19 @@ def get_hoods(lst):
     else:
         return set()
 
+def get_city(lst,metro_dict):
+    if len(lst) > 0:
+        try: return metro_dict[list(lst)[0]]['metro']
+        except: return 'Unknown'
+    else: return None
+
 def get_user_df():
 
     # read in json as dataframe
     filename = "/Users/gandalf/Documents/data/raw_data_users.json"
     df = pd.read_json(filename)
 
+    df = df.drop(df[df.onboarded != 1].index)
 
     df = df.rename(index=str, columns={"_created_at": "created",
                                        "_updated_at": "updated",
@@ -286,24 +293,26 @@ def get_user_df():
     df.picture = df.picture.apply(lambda x: isinstance(x,str))
 
 
-    # reformat df by renaming and moving around columns
 
 
-    # df = df[['created', 'updated', 'activeAt', 'available', # dates
-    #          'about', 'has_about', 'len_about',            # about
-    #          'birthday', 'age', 'gender', 'location', 'work',      # demographic
-    #          'hometownCity', 'hometownCountry', 'hometownState',     # more demographic
-    #          'college', 'facebookId','linkedinId', 'picture',        # engagement
-    #          'maxCost', 'minCost', 'neighborhoods', 'numRoommates', 'term', 'type', 'has_room',  # room basics
-    #          'amenities', 'hobbies',                                              # room not boolean
-    #          'inRelationship', 'isClean', 'isNight', 'isStudent', 'petsOk', 'smokingOk',   # room boolean
-    #          'onboarded']]
+    # Make Metro Dictionary
+    filename = "/Users/gandalf/Documents/data/raw_data_neighborhoods.json"
+    metro_df = pd.read_json(filename)
+    metro_df = metro_df.drop(['_created_at','_updated_at','city','name'], axis=1)
+    metro_df.set_index('_id')
+    metro_dict = metro_df.set_index('_id').to_dict('index')
+    df['metro'] = df.neighborhoods.apply(lambda x: get_city(x,metro_dict))
 
-    df = df.drop(df[df.onboarded != 1].index)
     print("created user dataframe")
 
     return df
-#
+
+
+
+
+
+
+
 # def remove_bad_uids(df, user_df):
 #     '''
 #     removes rows of the df that have uids not in uids
