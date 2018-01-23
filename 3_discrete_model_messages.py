@@ -44,7 +44,13 @@ def fit_data(model, X_train, X_test, y_train, y_test):
     return recall_score(y_test, y_pred), precision_score(y_test, y_pred), model.score(X_test, y_test)
 
 if __name__ == "__main__":
+    # on mac:
     X,y = get_data()
+
+    # on ec2:
+    # X = pd.read_json('../data_X.json')
+    # y = pd.read_json('../data_y.json')
+
     X_train, X_test, y_train, y_test = prepare_data(X, y)
     model = GradientBoostingClassifier()
     # recall, precision, accuracy = fit_data(model, X_train, X_test, y_train, y_test)
