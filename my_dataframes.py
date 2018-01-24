@@ -157,12 +157,13 @@ def get_conversation_df(message_df):
     # print(type(df.timestamp_receiver.iloc[0]))
     # get time to respond
     df['time_to_respond'] = df.timestamp_receiver - df.timestamp
+    df['time_to_respond'] = df['time_to_respond'].apply(lambda x: x.days)
     # print(type(df.time_to_respond.iloc[0]))
     # df.time_to_respond = df.time_to_respond.apply(lambda x: x.days)
 
-    df['timestamp'] = df.timestamp.apply(my_to_datetime_2)
-    df['timestamp_receiver'] = df.timestamp_receiver.apply(my_to_datetime_2)
-    df['time_to_respond'] = df.timestamp_receiver.apply(my_to_timedelta_2)
+    # df['timestamp2'] = df.timestamp.apply(my_to_datetime_2)
+    # df['timestamp_receiver'] = df.timestamp_receiver.apply(my_to_datetime_2)
+    # df['time_to_respond'] = df.time_to_respond.apply(my_to_timedelta_2)
 
     print("created conversation dataframe")
 
@@ -285,8 +286,8 @@ def get_user_df():
     print("... renamed columns")
 
     # change dates from strings to date times
-    df.created = df.created.apply(lambda x: my_to_datetime(x).date)
-    df.updated = df.updated.apply(lambda x: my_to_datetime(x).date)
+    df.created = df.created.apply(lambda x: my_to_datetime(x))
+    df.updated = df.updated.apply(lambda x: my_to_datetime(x))
     df.activeAt = df.activeAt.apply(lambda x: my_to_datetime(x))
     df.available = df.available.apply(lambda x: my_to_datetime(x))
     df.birthday = df.birthday.apply(lambda x: my_to_datetime(x))
