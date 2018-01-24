@@ -58,17 +58,18 @@ def get_message_df():
 
     df = df.drop(df[df.flag].index)
 
+    df['timestamp'] = df.timestamp.apply(my_to_datetime_2)
+
     print("created message dataframe")
     return df
 
 def my_to_datetime_2(x):
-    if isinstance(x, dict):
-        try:
-            return pd.to_datetime(x)
-        except:
-            return None
-    else:
-        return None
+    if isinstance(x, int): return pd.to_datetime(x*1000000)
+    else: return None
+
+def my_to_timedelta_2(x):
+    if isinstance(x, int):return pd.to_timedelta(x).days
+    else: return None
 
 def get_conversation_df(message_df):
 
@@ -158,6 +159,10 @@ def get_conversation_df(message_df):
     df['time_to_respond'] = df.timestamp_receiver - df.timestamp
     # print(type(df.time_to_respond.iloc[0]))
     # df.time_to_respond = df.time_to_respond.apply(lambda x: x.days)
+
+    df['timestamp'] = df.timestamp.apply(my_to_datetime_2)
+    df['timestamp_receiver'] = df.timestamp_receiver.apply(my_to_datetime_2)
+    df['time_to_respond'] = df.timestamp_receiver.apply(my_to_timedelta_2)
 
     print("created conversation dataframe")
 
