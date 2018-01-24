@@ -61,11 +61,21 @@ def get_message_df():
     print("created message dataframe")
     return df
 
+def my_to_datetime_2(x):
+    if isinstance(x, dict):
+        try:
+            return pd.to_datetime(x)
+        except:
+            return None
+    else:
+        return None
+
 def get_conversation_df(message_df):
 
     # get conversation length
     message_df['const'] = 1
     convo_length = message_df.groupby('conversation_id').const.sum().T.to_dict()
+
 
     # read in data from message df
     column_names = ['conversation_id',       # user id
@@ -77,10 +87,11 @@ def get_conversation_df(message_df):
                     'mid_sender',     # message id of the first message
                     'mid_receiver',    # message id of the second message
                     'timestamp',
+                    'timestamp_receiver',
                     'convo_length'
                    ]
 
-    ci,rs,fu,fl,fm,su,sl,sm,ts,cl = [],[],[],[],[],[],[],[],[],[]
+    ci,rs,fu,fl,fm,su,sl,sm,ts,tsr,cl = [],[],[],[],[],[],[],[],[],[],[]
     already_added = set()
 
     first_message = True
@@ -99,6 +110,7 @@ def get_conversation_df(message_df):
             sl.append(None)
             sm.append(None)
             ts.append(row.timestamp)
+            tsr.append(None)
             cl.append(convo_length[row.conversation_id])
 
         # if there was a response
@@ -117,11 +129,12 @@ def get_conversation_df(message_df):
                 sl.append(row.text_length)
                 sm.append(row.message_id)
                 already_added.add(row.conversation_id)
+                tsr.append(row.timestamp)
                 first_message = True
                 second_message = False
 
     # create dataframe from lists
-    df = pd.DataFrame([ci,rs,fu,fl,sl,fm,sm,ts,cl]).T
+    df = pd.DataFrame([ci,rs,fu,fl,sl,fm,sm,ts,tsr,cl]).T
     df.columns=column_names
 
     # get rid of the first 24 rows because they are trouble makers
@@ -132,10 +145,19 @@ def get_conversation_df(message_df):
     df['uid_receiver'] = df.apply(lambda x: next(iter(x['user_ids'].difference(set([x.uid_sender])))), axis=1)
     df = df.drop(['user_ids'], axis=1)
 
-    # get conversation length
-    message_df['const'] = 1
-    convo_length = message_df.groupby('conversation_id').const.sum().T.to_dict()
+    # Convo_length (can't move up)
     df['convo_length'] = df.conversation_id.apply(lambda x: convo_length[x])
+
+    # convert to timestamp
+    # df.timestamp = df.timestamp.apply(lambda x: my_to_datetime(x))
+    # df.timestamp_receiver = df.timestamp_receiver.apply(lambda x: my_to_datetime(x))
+    #
+    # print(type(df.timestamp.iloc[0]))
+    # print(type(df.timestamp_receiver.iloc[0]))
+    # get time to respond
+    df['time_to_respond'] = df.timestamp_receiver - df.timestamp
+    # print(type(df.time_to_respond.iloc[0]))
+    # df.time_to_respond = df.time_to_respond.apply(lambda x: x.days)
 
     print("created conversation dataframe")
 
@@ -233,13 +255,6 @@ def get_hoods(lst):
         return temp_set
     else:
         return set()
-
-# def get_hood(lst,metro_dict):
-#     if isinstance(lst, list):
-#         try: return metro_dict[ list(city_dict['objectId'])[0] ]['metro']
-#         except: return 'Unknown'
-#     else:
-#         return None
 
 def get_city(lst,metro_dict):
     if len(lst) > 0:
