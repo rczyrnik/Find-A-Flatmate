@@ -29,7 +29,7 @@ def display_metrics(model, X_test, y_test):
     print("\nMETRICS")
     print("Model recall: {}".format(recall_score(y_test_binary, y_pred_binary)))
     print("Model precision: {}".format(precision_score(y_test_binary, y_pred_binary)))
-    print("Model accuracy: {}".format(model.score(X_test, y_test_binary)))
+    print("Model accuracy: {}".format(model.score(X_test, y_test)))
 
     print ("\nCONFUSION MATRIX")
     print (confusion_matrix(y_test_binary, y_pred_binary))

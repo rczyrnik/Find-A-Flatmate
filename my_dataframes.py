@@ -333,6 +333,7 @@ def get_user_df():
     df['has_facebookId'] = df.facebookId.apply(lambda x: isinstance(x,str))
     df['has_linkedinId'] = df.linkedinId.apply(lambda x: isinstance(x,str))
     df['has_picture'] = df.picture.apply(lambda x: isinstance(x,str))
+    df['timeframe'] = df.available-df.created
     print("... added new features")
 
     binary = {True: 1, False: 0, 'male':1, 'female':0, 'shared':0,'private':1,'nan':-1}
