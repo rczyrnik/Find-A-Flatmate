@@ -149,21 +149,9 @@ def get_conversation_df(message_df):
     # Convo_length (can't move up)
     df['convo_length'] = df.conversation_id.apply(lambda x: convo_length[x])
 
-    # convert to timestamp
-    # df.timestamp = df.timestamp.apply(lambda x: my_to_datetime(x))
-    # df.timestamp_receiver = df.timestamp_receiver.apply(lambda x: my_to_datetime(x))
-    #
-    # print(type(df.timestamp.iloc[0]))
-    # print(type(df.timestamp_receiver.iloc[0]))
     # get time to respond
     df['time_to_respond'] = df.timestamp_receiver - df.timestamp
     df['time_to_respond'] = df['time_to_respond'].apply(lambda x: x.days)
-    # print(type(df.time_to_respond.iloc[0]))
-    # df.time_to_respond = df.time_to_respond.apply(lambda x: x.days)
-
-    # df['timestamp2'] = df.timestamp.apply(my_to_datetime_2)
-    # df['timestamp_receiver'] = df.timestamp_receiver.apply(my_to_datetime_2)
-    # df['time_to_respond'] = df.time_to_respond.apply(my_to_timedelta_2)
 
     print("created conversation dataframe")
 

@@ -1,122 +1,88 @@
 import pandas as pd
 
-def remove_bad_uids(df, user_df):
-    '''
-    removes and rows of the df that have uids not in uids
-    '''
-    if len(user_df.index) != len(user_df.index.unique()): return 'panic!'
-    uids = set(user_df.index)
-    df['flag1'] = df.first_uid.apply(lambda x: x not in uids)
-    df['flag2'] = df.second_uid.apply(lambda x: x not in uids)
-    df['flag'] = df.flag1 | df.flag2
-
-    df = df.drop(df[df.flag].index)
-
-    df = df.drop(['flag1','flag2','flag'], axis=1)
-    return df
-
-
-def get_rent_range(first_user, second_user):
-    max1 = first_user.maxCost
-    max2 = second_user.maxCost
-    min1 = first_user.minCost
-    min2 = second_user.minCost
-    if max1*max2*min1*min2 > 0:
-        upper = min(first_user.maxCost,second_user.maxCost)
-        lower = max(first_user.minCost,second_user.minCost)
-        if upper-lower > 0: return upper-lower
-        else: return 0
-    else: return 175
-
-def test_get_rent_range():
-    yes1 = '0a9yOPKFSH'
-    yes2 = '013LzOrVju'
-    no1 = '0UBLgJIHgz'
-    no2 = '0EWNOmyQmW'
-    low = '01DE0NCjwh'
-    high = '02GDyQPLII'
-    print(get_rent_range(user_df.loc[yes1], user_df.loc[yes2])) # should be 150
-    print(get_rent_range(user_df.loc[yes1], user_df.loc[no1]))  # should be 175
-    print(get_rent_range(user_df.loc[no2], user_df.loc[no1]))   # should be 175
-    print(get_rent_range(user_df.loc[low], user_df.loc[high]))  # should be 0
-
-def get_average_overlap(df,samples):
-    # to find average overlap of two users' rent ranges
-    # comes out to about $175
-    s = 0
-    for n in range(samples):
-        two_users = choice(user_df[user_df.cost_range>0].index,2)
-        overlap = user_df.loc[two_users,'maxCost'].min()-user_df.loc[two_users,'minCost'].max()
-        if overlap < 0: overlap = 0
-        s += overlap
-    return s/samples
-
-
-def get_inverse_distance(first_user, second_user):
-    x1 = first_user.longitude
-    x2 = second_user.latitude
-    y1 = first_user.longitude
-    y2 = second_user.latitude
-    return ((x2-x1)**2+(y2-y1)**2)**(-.5)
-
 def roommate_rules(roommates):
     if roommates > 4: return 3
     elif roommates > 1: return 2
     elif roommates > 0: return 1
     else: return 0
 
-def get_similar_roommates(first_user, second_user):
-    roommates1 = roommate_rules(first_user.numRoommates)
-    roommates2 = roommate_rules(second_user.numRoommates)
-    return abs(roommates1-roommates2)
+def get_rent_range(row):
+    max1 = row.maxCost_sender
+    max2 = row.maxCost_receiver
+    min1 = row.minCost_sender
+    min2 = row.minCost_receiver
+    if max1*max2*min1*min2 > 0:
+        upper = min(max1,max2)
+        lower = max(min1,min2)
+        if upper-lower > 0: return upper-lower
+        else: return 0
+    else: return 175
 
-def feature_time(df, user_df):
-    '''
-    age_dif: difference in ages between users
-    rent_overlap: buy how much do their ideal rent ranges overlap
-    same_gender: m/m or f/f
-    same_relate:  are they both in relationships or single?
-    same_clean: are the both clean/messy
-    same_night: are they both early-birds or night owls?
-    same_student: are they both students?
-    sender_attractiveness: do people generally respond to this senders messages?
-    receiver_selectivity: does this receiver generally respond to peopls messages?
-    '''
-    df = remove_bad_uids(df, user_df)
+def my_distance(row):
+    a = row.location_receiver
+    b = row.location_sender
+    try:
+        one = b[0]-a[0]
+        two = b[1]-a[1]
+        return (one**2+two**2)**(.5)
+    except:
+        return None
 
-    ad,ro,di,rn,sg,sr,sc,sn,ss,sm,st,sa,rs = [],[],[],[],[],[],[],[],[],[],[],[],[]
+def get_features(df):
+    # age difference
+    df['age_dif'] = abs(df.age_sender-df.age_receiver)
 
-    for index, row in df.iterrows():
-        first = user_df.loc[str(row.first_uid)]
-        second = user_df.loc[str(row.second_uid)]
-        ad.append(abs(first.age - second.age))
-        ro.append(get_rent_range(first, second))
-        # di.append(get_inverse_distance(first, second))
-        rn.append(get_similar_roommates(first, second))
-        sg.append(first.gender == second.gender)
-        sr.append(first.inRelationship == second.inRelationship)
-        sc.append(first.isClean == second.isClean)
-        sn.append(first.isNight == second.isNight)
-        ss.append(first.isStudent == second.isStudent)
-        sm.append(first.smokingOk == second.smokingOk)
-        st.append(first.term == second.term)
-        sa.append(first.attractiveness)
-        rs.append(second.selectivity)
+    # similarities
+    df['same_gender'] = df.gender_sender==df.gender_receiver
+    df['same_relate'] = df.inRelationship_sender == df.inRelationship_receiver
+    df['same_clean'] = df.isClean_sender == df.isClean_receiver
+    df['same_night'] = df.isNight_sender == df.isNight_receiver
+    df['same_student'] = df.isStudent_sender == df.isStudent_receiver
+    df['same_smoking'] = df.smokingOk_sender == df.smokingOk_receiver
+    df['same_type'] = df.type_sender == df.type_receiver
+    df['same_term'] = df.term_sender == df.term_receiver
+    df['same_work'] = df.work_sender == df.work_receiver
+    df['same_city'] = df.hometownCity_sender == df.hometownCity_receiver
+    df['same_state'] = df.hometownState_sender == df.hometownState_receiver
+    df['same_country'] = df.hometownCountry_sender == df.hometownCountry_receiver
+    df['same_college'] = df.college_sender == df.college_receiver
+    df['same_metro'] = df.metro_sender == df.metro_receiver
 
-    print(len(df))
-    print(len(sr))
-    df['age_dif'] = ad
-    df['rent_overlap'] = ro
-    # df['inverse_distance'] = di
-    df['roommate_num_sim'] = rn
-    df['same_gender'] = sg
-    df['same_relate'] = sr
-    df['same_clean'] = sc
-    df['same_night'] = sn
-    df['same_student'] = ss
-    df['same_smoking'] = sm
-    df['same_term'] = st
-    df['sender_attractiveness'] = sa
-    df['receiver_selectivity'] = rs
+    # overlaps
+    df['overlap_roommate'] = abs(df.numRoommates_sender.apply(lambda x: roommate_rules(x))
+                                  -df.numRoommates_receiver.apply(lambda x: roommate_rules(x)))
+    df['hobbies_receiver'] = df.hobbies_receiver.apply(lambda x: set(x) if isinstance(x,list) else set())
+    df['hobbies_sender'] = df.hobbies_sender.apply(lambda x: set(x) if isinstance(x,list) else set())
+    df['overlap_hobbies'] = df.apply(lambda x: len(x['hobbies_receiver'].intersection(x['hobbies_sender'])), axis=1)
 
+    df['amenities_receiver'] = df.amenities_receiver.apply(lambda x: set(x) if isinstance(x,list) else set())
+    df['amenities_sender'] = df.amenities_sender.apply(lambda x: set(x) if isinstance(x,list) else set())
+    df['overlap_amenities'] = df.apply(lambda x: len(x['amenities_receiver'].intersection(x['amenities_sender'])), axis=1)
+
+    df['neighborhoods_receiver'] = df.neighborhoods_receiver.apply(lambda x: set(x) if isinstance(x,list) else set())
+    df['neighborhoods_sender'] = df.neighborhoods_sender.apply(lambda x: set(x) if isinstance(x,list) else set())
+    df['overlap_neighborhoods'] = df.apply(lambda x: len(x['neighborhoods_receiver'].intersection(x['neighborhoods_sender'])), axis=1)
+
+    df['overlap_rent'] = df.apply(get_rent_range, axis=1)
+
+    # urgencies
+    df['urgency_receiver'] = df.available_receiver-df.timestamp
+    df.urgency_receiver = df.urgency_receiver.apply(lambda x: x.days)
+
+    df['urgency_sender'] = df.available_sender-df.timestamp
+    df.urgency_sender = df.urgency_sender.apply(lambda x: x.days)
+
+    # distance between sender and receiver
+    df['distance'] = df.apply(my_distance, axis=1)
+
+
+    # rename T/F as 1/0
+    binary = {True: 1, False: 0}
+    col_to_binary = ['response',
+                 'same_work','same_city','same_state','same_country','same_metro',
+                 'same_college','same_gender','same_relate','same_clean','same_night',
+                 'same_student','same_smoking','same_term','same_type']
+    for col in col_to_binary: df[col] = df[col].map(binary)
+
+    print("columns with null values: {}".format(len(df.columns[df.isnull().any()])))
     return df
