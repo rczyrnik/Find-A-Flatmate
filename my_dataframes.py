@@ -63,13 +63,13 @@ def get_message_df():
     print("created message dataframe")
     return df
 
-def my_to_datetime_2(x):
-    if isinstance(x, int): return pd.to_datetime(x*1000000)
-    else: return None
-
-def my_to_timedelta_2(x):
-    if isinstance(x, int):return pd.to_timedelta(x).days
-    else: return None
+# def my_to_datetime_2(x):
+#     if isinstance(x, int): return pd.to_datetime(x*1000000)
+#     else: return None
+#
+# def my_to_timedelta_2(x):
+#     if isinstance(x, int):return pd.to_timedelta(x).days
+#     else: return None
 
 def get_conversation_df(message_df):
 
@@ -232,23 +232,23 @@ def get_response_df(convo_df):
 
     return user_response
 
-def my_to_datetime(x):
-    if isinstance(x, dict):
-        try:
-            return pd.to_datetime(x['$date'])
-        except:
-            return None
-    else:
-        return None
+# def my_to_datetime(x):
+#     if isinstance(x, dict):
+#         try:
+#             return pd.to_datetime(x['$date'])
+#         except:
+#             return None
+#     else:
+#         return None
 
-def get_hoods(lst):
-    if isinstance(lst, list):
-        temp_set = set()
-        for thing in lst:
-            temp_set.add(thing['objectId'])
-        return temp_set
-    else:
-        return set()
+# def get_hoods(lst):
+#     if isinstance(lst, list):
+#         temp_set = set()
+#         for thing in lst:
+#             temp_set.add(thing['objectId'])
+#         return temp_set
+#     else:
+#         return set()
 
 def get_city(lst,metro_dict):
     if len(lst) > 0:
@@ -256,82 +256,82 @@ def get_city(lst,metro_dict):
         except: return 'Unknown'
     else: return None
 
-def get_user_df():
-
-    # read in json as dataframe
-    filename = "/Users/gandalf/Documents/data/raw_data_users.json"
-    df = pd.read_json(filename)
-    print("... read in dataframe")
-
-    df = df.drop(df[df.onboarded != 1].index)
-    print("... dropped users that aren't onboarded")
-
-    df = df.rename(index=str, columns={"_created_at": "created",
-                                       "_updated_at": "updated",
-                                       "_p_room"    : "has_room",
-                                       "_id"        : "uid"})
-    df = df.set_index('uid')
-    print("... renamed columns")
-
-    # change dates from strings to date times
-    df.created = df.created.apply(lambda x: my_to_datetime(x))
-    df.updated = df.updated.apply(lambda x: my_to_datetime(x))
-    df.activeAt = df.activeAt.apply(lambda x: my_to_datetime(x))
-    df.available = df.available.apply(lambda x: my_to_datetime(x))
-    df.birthday = df.birthday.apply(lambda x: my_to_datetime(x))
-    df['age'] = 2018-df['birthday'].apply(lambda x: x.year)
-    print("... changed to datetimes")
-
-
-
-    # drop unused columns
-    col_to_drop = ['_acl','_auth_data_facebook','_hashed_password','_rperm','_wperm','blocked','email','emailVerified','firstName',
-                      'foundRoommate','groupChat','hometown','hometownCounty','likes','lastName','positions','recommended','username']
-    df = df.drop(col_to_drop, axis = 1)
-    print("... dropped columns")
-
-
-    # Make Metro Dictionary
-    filename = "/Users/gandalf/Documents/data/raw_data_neighborhoods.json"
-    metro_df = pd.read_json(filename)
-    metro_df = metro_df.drop(['_created_at','_updated_at','city','name'], axis=1)
-    metro_df.set_index('_id')
-    metro_dict = metro_df.set_index('_id').to_dict('index')
-
-    df.neighborhoods = df.neighborhoods.apply(get_hoods)
-    print("... got neighborhoods")
-    df['metro'] = df.neighborhoods.apply(lambda x: get_city(x,metro_dict))
-    print("... got metro areas")
-
-    # create new features
-    df = df.fillna({'about':''})
-    df['len_about'] = df.about.apply(lambda x: len(x))
-    df['has_about'] = df.len_about > 0
-    df['I_count'] = df.about.apply(lambda x: x.count('I'))
-    df['I_ratio'] = df.about.apply(lambda x: x.count('I')/len(x) if len(x) > 0 else np.nan)
-    df['period_count'] = df.about.apply(lambda x: x.count('.'))
-    df['period_ratio'] = df.about.apply(lambda x: x.count('.')/len(x) if len(x) > 0 else np.nan)
-    df['question_count'] = df.about.apply(lambda x: x.count('?'))
-    df['question_ratio'] = df.about.apply(lambda x: x.count('?')/len(x) if len(x) > 0 else np.nan)
-    df['exclaim_count'] = df.about.apply(lambda x: x.count('!'))
-    df['exclaim_ratio'] = df.about.apply(lambda x: x.count('!')/len(x) if len(x) > 0 else np.nan)
-    df['sentence_count'] = df.period_count+df.question_count+df.exclaim_count
-    df['sentence_ratio'] = df.period_ratio+df.question_ratio+df.exclaim_ratio
-    df.has_room = df.has_room.apply(lambda x: isinstance(x,str))
-    df['has_facebookId'] = df.facebookId.apply(lambda x: isinstance(x,str))
-    df['has_linkedinId'] = df.linkedinId.apply(lambda x: isinstance(x,str))
-    df['has_picture'] = df.picture.apply(lambda x: isinstance(x,str))
-    df['timeframe'] = df.available-df.created
-    print("... added new features")
-
-    binary = {True: 1, False: 0, 'male':1, 'female':0, 'shared':0,'private':1,'nan':-1}
-    col_to_binary = ['has_about', 'gender', 'has_facebookId', 'has_linkedinId', 'has_picture', 'has_room', 'type']
-    for col in col_to_binary: df[col] = df[col].map(binary)
-    print("... converted to binary")
-
-    print("Created user dataframe")
-
-    return df
+# def get_user_df():
+#
+#     # read in json as dataframe
+#     filename = "/Users/gandalf/Documents/data/raw_data_users.json"
+#     df = pd.read_json(filename)
+#     print("... read in dataframe")
+#
+#     df = df.drop(df[df.onboarded != 1].index)
+#     print("... dropped users that aren't onboarded")
+#
+#     df = df.rename(index=str, columns={"_created_at": "created",
+#                                        "_updated_at": "updated",
+#                                        "_p_room"    : "has_room",
+#                                        "_id"        : "uid"})
+#     df = df.set_index('uid')
+#     print("... renamed columns")
+#
+#     # change dates from strings to date times
+#     df.created = df.created.apply(lambda x: my_to_datetime(x))
+#     df.updated = df.updated.apply(lambda x: my_to_datetime(x))
+#     df.activeAt = df.activeAt.apply(lambda x: my_to_datetime(x))
+#     df.available = df.available.apply(lambda x: my_to_datetime(x))
+#     df.birthday = df.birthday.apply(lambda x: my_to_datetime(x))
+#     df['age'] = 2018-df['birthday'].apply(lambda x: x.year)
+#     print("... changed to datetimes")
+#
+#
+#
+#     # drop unused columns
+#     col_to_drop = ['_acl','_auth_data_facebook','_hashed_password','_rperm','_wperm','blocked','email','emailVerified','firstName',
+#                       'foundRoommate','groupChat','hometown','hometownCounty','likes','lastName','positions','recommended','username']
+#     df = df.drop(col_to_drop, axis = 1)
+#     print("... dropped columns")
+#
+#
+#     # Make Metro Dictionary
+#     filename = "/Users/gandalf/Documents/data/raw_data_neighborhoods.json"
+#     metro_df = pd.read_json(filename)
+#     metro_df = metro_df.drop(['_created_at','_updated_at','city','name'], axis=1)
+#     metro_df.set_index('_id')
+#     metro_dict = metro_df.set_index('_id').to_dict('index')
+#
+#     df.neighborhoods = df.neighborhoods.apply(get_hoods)
+#     print("... got neighborhoods")
+#     df['metro'] = df.neighborhoods.apply(lambda x: get_city(x,metro_dict))
+#     print("... got metro areas")
+#
+#     # create new features
+#     df = df.fillna({'about':''})
+#     df['len_about'] = df.about.apply(lambda x: len(x))
+#     df['has_about'] = df.len_about > 0
+#     df['I_count'] = df.about.apply(lambda x: x.count('I'))
+#     df['I_ratio'] = df.about.apply(lambda x: x.count('I')/len(x) if len(x) > 0 else np.nan)
+#     df['period_count'] = df.about.apply(lambda x: x.count('.'))
+#     df['period_ratio'] = df.about.apply(lambda x: x.count('.')/len(x) if len(x) > 0 else np.nan)
+#     df['question_count'] = df.about.apply(lambda x: x.count('?'))
+#     df['question_ratio'] = df.about.apply(lambda x: x.count('?')/len(x) if len(x) > 0 else np.nan)
+#     df['exclaim_count'] = df.about.apply(lambda x: x.count('!'))
+#     df['exclaim_ratio'] = df.about.apply(lambda x: x.count('!')/len(x) if len(x) > 0 else np.nan)
+#     df['sentence_count'] = df.period_count+df.question_count+df.exclaim_count
+#     df['sentence_ratio'] = df.period_ratio+df.question_ratio+df.exclaim_ratio
+#     df.has_room = df.has_room.apply(lambda x: isinstance(x,str))
+#     df['has_facebookId'] = df.facebookId.apply(lambda x: isinstance(x,str))
+#     df['has_linkedinId'] = df.linkedinId.apply(lambda x: isinstance(x,str))
+#     df['has_picture'] = df.picture.apply(lambda x: isinstance(x,str))
+#     df['timeframe'] = df.available-df.created
+#     print("... added new features")
+#
+#     binary = {True: 1, False: 0, 'male':1, 'female':0, 'shared':0,'private':1,'nan':-1}
+#     col_to_binary = ['has_about', 'gender', 'has_facebookId', 'has_linkedinId', 'has_picture', 'has_room', 'type']
+#     for col in col_to_binary: df[col] = df[col].map(binary)
+#     print("... converted to binary")
+#
+#     print("Created user dataframe")
+#
+#     return df
 
 
 
