@@ -1,52 +1,18 @@
 # MatchingService
 
-### 0. accessory files
+### 002. reading files
+  - 002a reading user data
+  - 002b reading message data
 
-### 1. read in data (1_get_dataframes.ipynb)
-
-  _INPUTS_
-  - file 1: data_users.json
-  - file 2: data_messages.json
-  - file 3: data_cities.json
-
-  _PY FILES_
-  - file 1: my_dataframes.py
-    - get_message_df()
-    - get_conversation_df(message_df)
-    - get_lastmessage_df()
-    - get_response_df(convo_df)
-    - get_user_data()
-    
-  - file 2: my_split.py
-    - ect_find_split(df, percent)
-    - ect_make_split(df, cutoff_timestamp)
-  
- - file 3: my_pickle.py
-    - pickle_it(df, name)
-   
- _OUTPUTS_
-  - file 1: data_users.pkl
-  - file 2: data_convo.pkl
+### 003. explore data
+  - 003a explore user data
+  - 003b explore message data
  
-### 2. eda (2_eda.ipynb)
+### 004. get targets
+  - 004a combine user and message data
+  - 004b explore combined data
 
-  _INPUTS_
-   - file 1: data_users.pkl
-   - file 2: data_convo.pkl
-   
-  _PY FILES_
-   - file 1: my_pickle.py
-     - unpickle_it(name)
-
-### 3. generate features (3_get_features.ipynb)
-
-  _INPUTS_
-   - file 1: data_users.pkl
-   - file 2: data_convo.pkl 
-  
- _PY FILES_
-  - file 1: my_pickle.py
-    - unpickle_it(name)
-    - pickle_it(df, name)
+### 005. models
+  - 005a linear/logistic regression
+  - 005b machine learning
     
-### 4. analysis (many files)
