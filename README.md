@@ -1,5 +1,7 @@
 # MatchingService
 
+_For my capstone project, I explored the way users interacted on an app-based roommate matching platform._
+
 ### 002. reading files
   - 002a reading user data
   - 002b reading message data
@@ -15,4 +17,4 @@
 ### 005. models
   - 005a linear/logistic regression
   - 005b machine learning
-    
+  
