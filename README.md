@@ -1,3 +1,5 @@
+![Flatmate Finder](img/flatmatefinder.png?raw=true "FlatmateFinder")
+
 # MatchingService
 
 _For my capstone project, I explored the way users interacted on an app-based roommate matching platform._
