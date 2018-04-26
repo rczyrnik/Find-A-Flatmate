@@ -21,7 +21,7 @@ I grouped the messages into conversations and considered a conversation sucessfu
 -Adaboost
 
 ### Results
-I was able to predict successful messages with an f1 score of around 30%. Given such a large class imbalance, even a 30% score is an improvement and can help the company to identify which users are most likely to respond.
+I was able to predict successful messages with an f1 score of around 40%. Given such a large class imbalance (90-10), a 40% score is an tremendous improvement and can help the company to identify which users are most likely to respond.
 
 ### Project Files
 
