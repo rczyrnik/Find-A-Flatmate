@@ -2,7 +2,7 @@
 
 # Flatmate Finder
 
-_I explored the way users interacted on an app-based roommate matching platform._
+_Exploring the way users interact on an app-based roommate matching platform._
 
 ### Introduction
 I partnered with an app-based roommate matching platform to investigate what factors influence whether a user can find a roommate through their app. Because the app doesn't follow up with sers to find which have successfully matched through the app, they define success as two users starting a conversation through the in-platform messaging service. 
@@ -15,8 +15,13 @@ The data set included 25,000 users who sent over 30,000 messages.
 The user data included 50 columns of data, including basic demographic information and roommate preferences. The message data was grouped into conversations, and included the time, users, and text of the message. 
 
 ### The Approach
+I grouped the messages into conversations and considered a conversation sucessful if there was at least one response. I then gathered information about the two users from the second table and built an ensemble machine learning model with three models:
+-Random Forest
+-Gradient Boosting
+-Adaboost
 
 ### Results
+I was able to predict successful messages with an f1 score of around 30%. Given such a large class imbalance, even a 30% score is an improvement and can help the company to identify which users are most likely to respond.
 
 ### Project Files
 
