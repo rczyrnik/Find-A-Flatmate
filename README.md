@@ -23,6 +23,24 @@ I grouped the messages into conversations and considered a conversation sucessfu
 ### Results
 I was able to predict successful messages with an f1 score of around 40%. Given such a large class imbalance (90-10), a 40% score is an tremendous improvement and can help the company to identify which users are most likely to respond.
 
+### What does this mean to the application?
+
+
+Everytime the app suggests one user to another, it's making a prediction that those two users will be a good match. The app has to balance showing every user in the area, including users who are unlikely to respond, against showing very few users and missing out on possible matches. 
+
+The ROC curve below shows this tradeoff. 
+![ROC Curve](img/roc_curve_AB.png?raw=true "ROC Curve")
+
+On the left is an application with a very low false positive rate - very unlikely to suggest users who wouldn't make a good match - but at the cost of a low true positive rate - not showing users who would be a good match.
+
+On the right is the reverse - an application who shows lots of good matches, but at the cost of also showing a lot of duds.
+
+Where exactly the app wants to be probably depenst on the location. Someplace like San Francisco, with a lot of users, can be more selective about who they show. We would want to place them somewhere near point "A" on the curve. The false positive rate is down at about 10% of users, meaning about 10% of the time the app recommends a user who won't be a good match, but the true positive rate is 50%, meaning the app doesn't show half the users that might be a good match. In someplace like San Francisco, that migh not be a big deal.
+
+On the flip side might be a place like my home state of Connecticut which has many fewer users. To make sure we have enough suggestions, we should pump the true positive rate up to 90% - missing out on only 10% of users who would be a good match. The cost to this is a much higher false positive rate - around 50% - meaning users won't match with about half of the potential roommates we suggest. 
+
+
+
 ### Project Files
 
 #### 002. reading files
