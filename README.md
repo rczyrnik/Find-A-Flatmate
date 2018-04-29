@@ -10,9 +10,9 @@ I partnered with an app-based roommate matching platform to investigate what fac
 I developed a model that more effectively identifies whether a particular user will respond to a message. With this model, the platform can be more selective in recommending possible matches.
 
 ### The Data Set
-The data set included 25,000 users who sent over 30,000 messages.
+The data set included 25,000 users who together sent over 30,000 messages.
 
-The user data included 50 columns of data, including basic demographic information and roommate preferences. The message data was grouped into conversations, and included the time, users, and text of the message. 
+The user data included 50 columns of data, including basic demographic information and roommate preferences. I grouped message data into conversations with information about time, users, and text of the message. 
 
 ### The Approach
 I grouped the messages into conversations and considered a conversation sucessful if there was at least one response. I then gathered information about the two users from the second table and built an ensemble machine learning model with four models:
