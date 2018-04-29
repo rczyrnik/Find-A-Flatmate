@@ -29,7 +29,7 @@ I was able to predict successful messages with an f1 score of around 40%. Given 
 Everytime the app suggests one user to another, it's making a prediction that those two users will be a good match. The app has to balance showing every user in the area, including users who are unlikely to respond, against showing very few users and missing out on possible matches. 
 
 The ROC curve below shows this tradeoff. 
-![ROC Curve](img/roc_curve_AB.png?raw=true "ROC Curve")
+![ROC Curve](img/roc_curve_AB_temp.png?raw=true "ROC Curve")
 
 On the left is an application with a very low false positive rate - very unlikely to suggest users who wouldn't make a good match - but at the cost of a low true positive rate - not showing users who would be a good match.
 
