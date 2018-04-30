@@ -1,18 +1,53 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, precision_score, recall_score
 from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import f1_score
 
-def load_arrays(scale = False):
+def smooth(lst, times=1):
+    once = [lst[0]] + [.25*lst[x-1]+.5*lst[x]+.25*lst[x+1] for x in range(0, len(lst)-1)]
 
-    data_file_path = "/Users/gandalf/Documents/coding/do_not_commit/capstone/"
+    if times == 1:
+        return once
+    else:
+        return (smooth(once, times-1))
+        
+def display_metrics(y_pred, y_test):
 
-    X_train = np.load(data_file_path+'X_train.npy')
-    X_test = np.load(data_file_path+'X_test.npy')
-    y_train = np.load(data_file_path+'y_train.npy')
-    y_test = np.load(data_file_path+'y_test.npy')
+    print("\nMETRICS")
+    print("Model recall: {:.3f}".format(recall_score(y_test, y_pred)))
+    print("Model precision: {:.3f}".format(precision_score(y_test, y_pred)))
+    print("Model f1: {:.3f}".format(f1_score(y_test, y_pred)))
+    print("Model accuracy: {:.3f}".format(accuracy_score(y_test, y_pred)))
+
+    print ("\nCONFUSION MATRIX        key")
+    matrix = confusion_matrix(y_test, y_pred)
+    labels = [["TP", "FP"],["FN","TP"]]
+
+    for x in [0,1]:
+        print("{}\t{}\t\t{}\t{}".format(matrix[x][0], matrix[x][1],labels[x][0], labels[x][1]))
+
+def load_arrays(scale = False, classification = True):
+
+    data_file_path = "/Users/gandalf/Documents/coding/Galvanize/MatchingService/data/"
+
     cols = np.load(data_file_path+'cols.npy')
+
+    if classification:
+        X_train = np.load(data_file_path+'X_train_class.npy')
+        X_test = np.load(data_file_path+'X_test_class.npy')
+        y_train = np.load(data_file_path+'y_train_class.npy')
+        y_test = np.load(data_file_path+'y_test_class.npy')
+    else:
+        X_train = np.load(data_file_path+'X_train_reg.npy')
+        X_test = np.load(data_file_path+'X_test_reg.npy')
+        y_train = np.load(data_file_path+'y_train_reg.npy')
+        y_test = np.load(data_file_path+'y_test_reg.npy')
+
 
     if scale:
         from sklearn.preprocessing import StandardScaler
@@ -72,21 +107,7 @@ def display_importances_trees(model, cols):
     feature_df.columns = ['feature','coefficient']
     return feature_df.sort_values('coefficient', ascending=False)
 
-def display_metrics(model, X_test, y_test):
-    y_pred = model.predict(X_test)
-    y_pred_binary = convert_to_binary(y_pred,3)
-    y_test_binary = convert_to_binary(y_test,3)
 
-    print("\nMETRICS")
-    print("Model recall: {}".format(recall_score(y_test_binary, y_pred_binary)))
-    print("Model precision: {}".format(precision_score(y_test_binary, y_pred_binary)))
-    print("Model accuracy: {}".format(model.score(X_test, y_test)))
-
-    print ("\nCONFUSION MATRIX")
-    print (confusion_matrix(y_test_binary, y_pred_binary))
-    print ("\nkey:")
-    print (" TN   FP ")
-    print (" FN   TP ")
 
 def get_stats(lists):
     return [np.array(lst).mean() for lst in lists]+[np.array(lst).std() for lst in lists]
