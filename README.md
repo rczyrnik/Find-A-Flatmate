@@ -1,6 +1,6 @@
-![Flatmate Finder](img/flatmatefinder.png?raw=true "FlatmateFinder")
+![Find-A-Flatmate](img/flatmatefinder.png?raw=true "Find-A-Flatmate")
 
-# Flatmate Finder
+# Find-A-Flatmate
 
 _Exploring the way users interact on an app-based roommate matching platform._
 
