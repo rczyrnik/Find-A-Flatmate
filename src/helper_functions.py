@@ -9,14 +9,27 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 
 def smooth(lst, times=1):
-    once = [lst[0]] + [.25*lst[x-1]+.5*lst[x]+.25*lst[x+1] for x in range(0, len(lst)-1)]
+    '''
+    Creates a smoother version of an original list
 
-    if times == 1:
-        return once
-    else:
-        return (smooth(once, times-1))
-        
+    INPUT: list
+    OUTPUT: list
+    '''
+
+    once = [lst[0]] + [.25*lst[x-1]+.5*lst[x]+.25*lst[x+1] for x in range(1, len(lst)-1)] + [lst[-1]]
+
+    if times == 1: return once
+    else: return (smooth(once, times-1))
+
 def display_metrics(y_pred, y_test):
+    '''
+    Given the predicted and actual values,
+        display recall, precision, f1, accuracy, and confusion matrix
+
+    INPUTS: y_pred, list, predicted values
+            y_test, list, actual values
+    OUTPUS: none
+    '''
 
     print("\nMETRICS")
     print("Model recall: {:.3f}".format(recall_score(y_test, y_pred)))
@@ -27,11 +40,21 @@ def display_metrics(y_pred, y_test):
     print ("\nCONFUSION MATRIX        key")
     matrix = confusion_matrix(y_test, y_pred)
     labels = [["TP", "FP"],["FN","TP"]]
-
     for x in [0,1]:
         print("{}\t{}\t\t{}\t{}".format(matrix[x][0], matrix[x][1],labels[x][0], labels[x][1]))
 
 def load_arrays(scale = False, classification = True):
+    '''
+    Shortcut to load the arrays needed to train the models
+
+    INPUTS: scale, boolean, should the data be scaled first?
+            classification, boolean, are the outputs boolean (1, 0) or numbers (1+)
+    OUTPUTS:    X_train, 2d array, training data
+                X_test, 2d array, testing data
+                y_train, 1d array, training values
+                y_test, 1d array, testing values
+                cols, heading for the X arrays
+    '''
 
     data_file_path = "/Users/gandalf/Documents/coding/Galvanize/MatchingService/data/"
 
@@ -59,6 +82,9 @@ def load_arrays(scale = False, classification = True):
     return X_train, X_test, y_train, y_test, cols
 
 def gridsearching(model, grid, X_train, y_train):
+    '''
+    grid searches parameters and saves as a data frame
+    '''
 
     search = GridSearchCV(model, param_grid=grid, scoring='f1')
     search.fit(X_train, y_train)
@@ -69,6 +95,10 @@ def gridsearching(model, grid, X_train, y_train):
     return df
 
 def plot_line(df, param):
+    '''
+    plots the results of grid searching a single variable as a line graph
+    '''
+
     plt.plot(df.iloc[:,4], df.mean_train_score)
     plt.plot(df.iloc[:,4], df.mean_test_score)
 
@@ -78,6 +108,9 @@ def plot_line(df, param):
     plt.show()
 
 def plot_bar(df, param, w=1, rotate=False):
+    '''
+    plots the results of grid searching a single variable as a bar graph
+    '''
     plt.bar(df.iloc[:,4], df.mean_train_score, width=w, yerr=df.std_train_score)
     plt.bar(df.iloc[:,4], df.mean_test_score, width=w, yerr=df.std_train_score)
 
@@ -107,8 +140,6 @@ def display_importances_trees(model, cols):
     feature_df.columns = ['feature','coefficient']
     return feature_df.sort_values('coefficient', ascending=False)
 
-
-
 def get_stats(lists):
     return [np.array(lst).mean() for lst in lists]+[np.array(lst).std() for lst in lists]
 
@@ -116,19 +147,6 @@ def display_values(my_dic):
     for k, v in my_dic.items():
         print("{:.1f}: {:.3f} ({:.3f}), {:.3f} ({:.3f}), {:.3f} ({:.3f})".format(k, v[0][0], v[0][1], v[1][0], v[1][1], v[2][0], v[2][1]))
 
-def save_obj(obj, name ):
-    with open(name + '.pkl', 'wb') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-
-    # make fake data
-    # pred_all_0 = [0]*len(y_test)
-    # pred_all_1 = [1]*len(y_test)
-    # pred_50_50 = np.random.choice([0,1], size=len(y_test))
-    # pred_90_10 = np.random.choice([0,1], size=len(y_test), p=[.9,.1])
-    # print("\nRECALL AND ACCURACY FOR DIFFERNET MODELS")
-    # print("recall     \t precision   \tmodel")
-    # print(recall_score(y_test_binary, y_pred_binary), '\t',precision_score(y_test_binary, y_pred_binary), "my model")
-    # print(recall_score(y_test_binary, pred_all_0),'\t','\t', precision_score(y_test_binary, pred_all_0), "\t\tpredict all zero")
-    # print(recall_score(y_test_binary, pred_all_1),'\t','\t', precision_score(y_test_binary, pred_all_1), "predict all one")
-    # print(recall_score(y_test_binary, pred_50_50),'\t', precision_score(y_test_binary, pred_50_50), "predict 50-50")
-    # print(recall_score(y_test_binary, pred_90_10), precision_score(y_test_binary, pred_90_10), "predict 90-10")
+# def save_obj(obj, name ):
+#     with open(name + '.pkl', 'wb') as f:
+#         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
