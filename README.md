@@ -44,3 +44,13 @@ Tons of users, we can afford to miss out on a few opportuntiites. False positive
 
 I love my home state of Connecitcut, but there just isn't the density of young people looking for shared housing. This means we can't be as picky in matching users. Yes, our false positive rate jumps to 50%, meaning about half the people we suggest won't be a match, but we need that high false positive rate to maintain a 90% true positive rate, missing out on very few potential matches. 
 
+### Discussion
+A 10% response rate can be very disheartening for users of this app, and improving the response rate should be a priority.
+
+My model showed that it's possible to predict, with good recall and precision, who will respond to a user's message. It should be possible, therefore, to run the calculation before suggesting possible matches, to rule out candidates that may look good on paper but who have a very low probability of matching.
+
+This possibility seems even more likely when we look at the features that most influenced predictions. Of the ten most influential features, eight were true of the receiver alone, suggesting that it's not the "fit" between two users that determines whether someone will respond or not. Instead, some users are just unlikely to respond no matter what.
+
+For example, users who didn't fill out the "about me section" of their profile are more than half as likely to respond compared to users who did fill out that section. By suggesting only users who have filled out that section, we may be able to improve the response rate from the current 10% to 16%.
+
+User experience is key to the success of this app, and if users feel like they are sending messages out into the void without receiving responses, they will switch to another platform. By rigging the system towards users who are more likely to respond, we provide a better experience for everyone.
