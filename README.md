@@ -5,9 +5,8 @@
 _Exploring the way users interact on an app-based roommate matching platform._
 
 ## Introduction
-I partnered with an app-based roommate matching platform to investigate what factors influence whether a user can find a roommate through their app. Because the app doesn't follow up with sers to find which have successfully matched through the app, they define success as two users starting a conversation through the in-platform messaging service. 
 
-I developed a model that more effectively identifies whether a particular user will respond to a message. With this model, the platform can be more selective in recommending possible matches.
+I partnered with an app-based roommate finding platform to investigate the reasons behind a low message response rate. I built a model that can predict when users will respond, and discovered that most of the time it's not a bad match that's at fault, but simply a recipient that was never likely to engage in the first place. With my model, the app can better suggest potential roommates by avoiding matches that were never likely to respond. 
 
 ## The Data Set
 The data set included 25,000 users who together sent over 30,000 messages.
@@ -15,6 +14,8 @@ The data set included 25,000 users who together sent over 30,000 messages.
 The user data included 50 columns of data, including basic demographic information and roommate preferences. I grouped message data into conversations with information about time, users, and text of the message. 
 
 ## The Approach
+Because the app doesn't follow up with sers to find which have successfully matched through the app, they define success as two users starting a conversation through the in-platform messaging service. 
+
 I grouped the messages into conversations and considered a conversation sucessful if there was at least one response. I then gathered information about the two users from the second table and built an ensemble machine learning model with four models:
 
 - Linear Regression
