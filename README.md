@@ -31,7 +31,6 @@ I was able to predict successful messages with an f1 score of around 40%. Given 
 
 ## What does this mean to the application?
 
-
 Everytime the app suggests one user to another, it's making a prediction that those two users will be a good match. The app has to balance showing every user in the area, including users who are unlikely to respond, against showing very few users and missing out on possible matches. Where they put that cutoff depends in large part on the number of users in an area.
 
 The ROC curve below shows this tradeoff. 
@@ -39,7 +38,7 @@ The ROC curve below shows this tradeoff.
 
 #### Point A: San Francisco, California
 
-Tons of users, we can afford to miss out on a few opportuntiites. False positive rate is down at 10% so we are unlikely to show potential users who wouldn't be a good match. To achieve such a low fals positive rate, we have to accept a true positive rate at 50%, which isn't great; it means we're not picking up on about half of potential matches. But as long as there are lots of fish in the sea, it's not imperative that we catch them all.
+Tons of users, we can afford to miss out on a few opportuntiites. False positive rate is down at 10% so we are unlikely to show potential users who wouldn't be a good match. To achieve such a low false positive rate, we have to accept a true positive rate at 50%, which isn't great; it means we're not picking up on about half of potential matches. But as long as there are lots of fish in the sea, it's not imperative that we catch them all.
 
 #### Point B: Hartford, Connecticut
 
@@ -54,4 +53,4 @@ This possibility seems even more likely when we look at the features that most i
 
 For example, users who didn't fill out the "about me section" of their profile are more than half as likely to respond compared to users who did fill out that section. By suggesting only users who have filled out that section, we may be able to improve the response rate from the current 10% to 16%.
 
-User experience is key to the success of this app, and if users feel like they are sending messages out into the void without receiving responses, they will switch to another platform. By rigging the system towards users who are more likely to respond, we provide a better experience for everyone.
+User experience is key to the success of this app, and if users feel like they are sending messages out into the void without receiving responses, they will switch to another platform. By rigging the system towards users who are more likely to respond, we provide a better experience.
